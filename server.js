@@ -6,6 +6,7 @@ var OPC = new require('./opc'),
     LineByLineReader = require('line-by-line'),
     lr = new LineByLineReader('diehard/pixels.txt'),
     count = 0,
+    colors = [],
     motion, 
     mic, 
     audioLevel,
@@ -59,16 +60,6 @@ lr.on('error', function (err) {
 lr.on('line', function (line) {
   lr.pause();
   colors = line.split(',');
-  var r, g, b;
-  for(var i = 0; i < colors.length - 1;) {
-    for(var j = 0; j < 3; ++i, ++j) {
-      r = colors[i];
-      g = colors[i % 2];
-      b = colors[i % 3];
-    }
-    
-    pixelQueue.push([r, g, b]);
-  }
 });
 
 lr.on('end', function () {
@@ -79,19 +70,21 @@ function draw() {
   var millis = new Date().getTime();
   switch (state) {
     case YIPPEE_KI_YAY:
-      if(pixelQueue.length > 0) {
-        var rgb, 
-            str = "";
-        for(var i = 0; i < NUM_PIXELS;) {
-          for(var j = 0; j < 3; i++, j++) {
-            rgb = pixelQueue.shift();
-            str += rgb[0] + " " + rgb[1] + " " + rgb[2] + ",";
-          }
-        }
+      var rgb, 
+          str = "",
+          count = 0;
+      for(var i = 0; i < colors.length;) {
+        r = colors.shift();
+        g = colors.shift();
+        b = colors.shift();
+        
+        client.setPixel(pixel, r, g, b);
 
-        console.log(pixelQueue.length, " | ", str);
-        lr.resume();
+        str += r + " " + g + " " + b + " " + ",";
       }
+
+      console.log("| ", str);
+      lr.resume();
     break;
     case HO_HO_HO:
       for (var pixel = 0; pixel < NUM_PIXELS; pixel++) {
@@ -114,8 +107,8 @@ function draw() {
       }
     break;
   }
-  */
+
+  client.writePixels();
 }
 
-//setInterval(draw, 30);
 setInterval(draw, 1000 / FPS);
