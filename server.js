@@ -1,22 +1,23 @@
 #!/usr/bin/env node
 
-// Simple red/blue fade with Node and opc.js
+var OPC = new require('./opc'),
+    client = new OPC('localhost', 7890),
+    five = require("johnny-five"),
+    LineByLineReader = require('line-by-line'),
+    lr = new LineByLineReader('diehard/pixels.txt'),
+    count = 0,
+    motion, 
+    mic, 
+    audioLevel,
+    state;
 
-var OPC = new require('./opc')
-var client = new OPC('localhost', 7890);
-var Pixels = require('./Pixels');
-var count = 0;
-var five = require("johnny-five");
+const YIPPEE_KI_YAY = 0,
+      HO_HO_HO = 1,
+      THE_HARD_WAY = 2,
+      NUM_PIXELS = 21,
+      FPS = 24;
 
-var motion, mic, audioLevel;
-
-const YIPPEE_KI_YAY = 0;
-const HO_HO_HO = 1;
-const THE_HARD_WAY = 2;
-
-const NUM_PIXELS = 21;
-
-var state = YIPPEE_KI_YAY;
+state = YIPPEE_KI_YAY;
 
 five.Board().on("ready", function() {
   console.log("board ready");
@@ -49,32 +50,47 @@ five.Board().on("ready", function() {
   mic.scale([0, 100]).on("data", function() {
     audioLevel = this.value;
   });
+});
 
+lr.on('error', function (err) {
+  console.log(err);
+});
+
+lr.on('line', function (line) {
+  lr.pause();
+  colors = line.split(',');
+  var r, g, b;
+  for(var i = 0; i < colors.length - 1;) {
+    for(var j = 0; j < 3; ++i, ++j) {
+      r = colors[i];
+      g = colors[i % 2];
+      b = colors[i % 3];
+    }
+    
+    pixelQueue.push([r, g, b]);
+  }
+});
+
+lr.on('end', function () {
+  lr = new LineByLineReader('diehard/pixels.txt');  
 });
 
 function draw() {
   var millis = new Date().getTime();
   switch (state) {
     case YIPPEE_KI_YAY:
-      try {
-          for(var i = 0; i < NUM_PIXELS; ++i) {
-              var curPixel = i + count;
-	      var t = i * 0.2 + millis * 0.002;
-	      var r = Pixels.data[curPixel][0];
-	      var g = Pixels.data[curPixel][1];
-              var b = Pixels.data[curPixel][2];
-  	      client.setPixel(i, r, g, b);
-  	      //console.log(r + ", " + g + ", " + b);
+      if(pixelQueue.length > 0) {
+        var rgb, 
+            str = "";
+        for(var i = 0; i < NUM_PIXELS;) {
+          for(var j = 0; j < 3; i++, j++) {
+            rgb = pixelQueue.shift();
+            str += rgb[0] + " " + rgb[1] + " " + rgb[2] + ",";
           }
-          client.writePixels();
-        
-	  if(count + 21 < Pixels.data.length) {
-	    count += 21;
-	  } else {
-	    count = 0;
-	  }
-      } catch(e) {
-          console.log(e);
+        }
+
+        console.log(pixelQueue.length, " | ", str);
+        lr.resume();
       }
     break;
     case HO_HO_HO:
@@ -98,6 +114,8 @@ function draw() {
       }
     break;
   }
+  */
 }
 
-setInterval(draw, 30);
+//setInterval(draw, 30);
+setInterval(draw, 1000 / FPS);
