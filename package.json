@@ -1,23 +1,23 @@
 {
   "name" : "nakatomi-tree",
-  "description" : "The Nakatomi Tree Is a Nodebot powered by the Intel Edison. In its default state, the NeoPixel LEDs play back Die Hard - aka The Best Christmas Movie Ever. Two other states 
-can be activated when the tree detects motion and sound. The Die Hard pixel color data was generated using Processing.",
-  "version" : "0.1",
+  "description" : "A tree that plays Die Hard",
+  "version" : "0.0.1",
   "homepage" : "https://github.com/ryoshu/nakatomi-tree",
   "author" : {
     "name" : "Ricky Bacon"
   },
-  "repository": {
+  "repository" : {
     "type": "git",
     "url": "git://github.com/ryoshu/nakatomi-tree.git"
   },
-  "licenses": [
+  "licenses" : [
     {
       "type": "MIT",
       "url": "https://github.com/rwldrn/johnny-five/blob/master/LICENSE-MIT"
     }
   ],
   "dependencies": {
-    "johnny-five" : "latest"
+    "johnny-five": "latest",
+    "line-by-line": "latest"
   }
 }
