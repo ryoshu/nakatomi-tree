@@ -72,8 +72,8 @@ function draw() {
     case YIPPEE_KI_YAY:
       var rgb, 
           str = "",
-          count = 0;
-      for(var i = 0; i < colors.length;) {
+          pixel = 0;
+      for(var i = 0; i < colors.length; pixel++) {
         r = colors.shift();
         g = colors.shift();
         b = colors.shift();
